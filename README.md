@@ -72,9 +72,9 @@ export default function Calendar() {
 
 ## Building our Calendar using CSS Grid and TailwindCSS
 
-Using TailwindCSS we can apply and define our Grid property by using the utility class `grid grid-cols-7`, then we can map over our array of dates and create a button for each of them for our users to interact with. By applying the CSS property `grid-template-columns: repeat(7, minmax(0, 1fr));` using `grid-cols-7`, we are explicitly defining the columns and allocation of our columns for all the rows of content to follow.
+Using TailwindCSS we can apply and define our Grid property with the utility class `grid grid-cols-7`, then we can map over our array of dates and create a button for each of them for our users to interact with. By applying the CSS property `grid-template-columns: repeat(7, minmax(0, 1fr));` using `grid-cols-7`, we are explicitly defining the columns and allocation of our columns for all the rows of content to follow.
 
-We also have an array named `firstDayOfMonth` that contains more Tailwind utility classes. We used this array to define a given utility class for our first item (set conditionally using `index === 0) and start the calendar on the correct day of the week (i.e. Monday, Tuesday, etc.).
+We also have an array named `firstDayOfMonth` that contains more Tailwind utility classes. We used this array to define a given utility class for our first item (set conditionally using `index === 0`) and start the calendar on the correct day of the week (i.e. Monday, Tuesday, etc.).
 
 For any given date (i.e. 1st of October 2022), Day.js can tell us which day of the week that date falls in. For example, the 1st of October 2022 falls on a Saturday, so it's the 7th day of the week (based on a Sunday to Saturday calendar week), calling `dayjs(date).day()` will return 7 accessing the right utility class to display our calendar.
 
