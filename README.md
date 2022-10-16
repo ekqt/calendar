@@ -10,7 +10,7 @@ $ npm i
 $ npm run dev
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/ekqt/calendar)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/ekqt/calendar?file=src/components/Calendar.tsx&title=Calendar%20Component)
 
 # Build a Tiny Calendar without Flex or useState
 
@@ -21,7 +21,7 @@ Is it possible to build a fully functional calendar component under 7 kB without
 -   **React** — extract state logic into reducers by exploring [useReducer](https://beta.reactjs.org/apis/react/useReducer) and skipping additional re-renders using [useCallback](https://beta.reactjs.org/apis/react/useCallback)
 -   **TypeScript** — work smarter and faster by taking advantage of TypeScript's autocompletion and IntelliSense.
 
-There's a lot of ground to cover, so please go through this guide along with the finished component: [Calendar GH Repo](https://github.com/ekqt/calendar) | [Open 'Calendar' in StackBlitz](https://stackblitz.com/github/ekqt/calendar).
+There's a lot of ground to cover, so please go through this guide along with the finished component: [Calendar GH Repo](https://github.com/ekqt/calendar) | [Open 'Calendar' in StackBlitz](https://stackblitz.com/github/ekqt/calendar?file=src/components/Calendar.tsx&title=Calendar%20Component).
 
 ## Getting started with Day.js
 
@@ -214,4 +214,4 @@ After setting up our data, styling our calendar, and managing its state, here ar
 
 Feel free to explore this example using the resources below:
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/ekqt/calendar)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/ekqt/calendar?file=src/components/Calendar.tsx&title=Calendar%20Component)
