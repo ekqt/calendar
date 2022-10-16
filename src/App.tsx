@@ -24,7 +24,6 @@ function App() {
             <div className="mx-auto">
                 <Calendar
                     appointments={appointments}
-                    showSecondMonth={true}
                     value={value}
                     setValue={setValue}
                 />

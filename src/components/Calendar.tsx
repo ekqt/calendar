@@ -1,165 +1,150 @@
-import { useReducer, useEffect } from "react";
+import { useReducer, useCallback } from "react";
 
 import dayjs from "dayjs";
 
-// State Logic Setup
+// REUSABLE UTILITY FUNCTIONS FOR `dayjs`
+
+/** Create a date at the start of the day 00:00. */
+function today() {
+    return dayjs().startOf("day").toDate();
+}
+/** Create an array of Dates for a given month */
+function createMonth(month = today()) {
+    return new Array(dayjs(month).daysInMonth()).fill("").map(
+        (n, index) =>
+            (n = dayjs(month)
+                .date(index + 1)
+                .toDate())
+    );
+}
+
+/** Compare two dates with each other or one against today's date. */
+function sameDay(date1: Date, date2?: Date): boolean {
+    return date2
+        ? dayjs(date1).isSame(date2, "day")
+        : dayjs().isSame(date1, "day");
+}
+
+// REDUCER SETUP FOR STATE LOGIC
 
 const initialValues = {
-    selectedDate: dayjs().toDate(),
-    firstMonth: dayjs().format("MMMM YYYY"),
-    secondMonth: dayjs().add(1, "month").format("MMMM YYYY"),
+    selectedDate: today(),
+    currentMonth: today(),
 };
 
-type DispatchActionType =
-    | { operation: "selectDate"; value: Date }
-    | { operation: "firstMonth"; value: number }
-    | { operation: "bothMonths"; value: number };
+type ReducerActionType =
+    | { type: "SELECT_DATE"; value: Date }
+    | { type: "UPDATE_MONTH"; value: Date };
 
-function reducer(state: typeof initialValues, action: DispatchActionType) {
-    const { operation, value } = action;
-    const { firstMonth, secondMonth } = state;
-    switch (operation) {
-        case "selectDate": {
+/** Manages state for selected date and current month  */
+function reducer(state: typeof initialValues, action: ReducerActionType) {
+    const { type, value } = action;
+    switch (type) {
+        case "SELECT_DATE": {
             return {
                 ...state,
                 selectedDate: value,
             };
         }
-        case "firstMonth": {
+        case "UPDATE_MONTH": {
             return {
                 ...state,
-                firstMonth: dayjs(firstMonth)
-                    .add(value, "month")
-                    .format("MMMM YYYY"),
-            };
-        }
-        case "bothMonths": {
-            return {
-                ...state,
-                firstMonth: dayjs(firstMonth)
-                    .add(value, "month")
-                    .format("MMMM YYYY"),
-                secondMonth: dayjs(secondMonth)
-                    .add(value, "month")
-                    .format("MMMM YYYY"),
+                currentMonth: value,
             };
         }
     }
 }
 
-export default function Calendar({
+type HandleDispatchType =
+    | { type: "SELECT_DATE"; value: Date }
+    | { type: "UPDATE_MONTH"; value: number };
+
+export default function CalendarContainer({
     appointments,
-    showSecondMonth,
     value,
     setValue,
 }: {
     appointments?: Array<{ date: string }>;
-    showSecondMonth?: boolean;
     value: Date | null;
     setValue: (n: Date) => void;
 }) {
-    const [{ selectedDate, firstMonth, secondMonth }, dispatch] = useReducer(
+    const [{ selectedDate, currentMonth }, dispatch] = useReducer(
         reducer,
         initialValues
     );
 
-    useEffect(() => {
-        setValue(selectedDate);
-    }, [selectedDate]);
+    const currentMonthDates: Array<Date> = createMonth(currentMonth);
 
-    const firstMonthDays: Array<Date> = Array(dayjs(firstMonth).daysInMonth())
-        .fill("")
-        .map(
-            (n, index) =>
-                (n = dayjs(firstMonth)
-                    .date(index + 1)
-                    .toDate())
-        );
+    /** Cached function to update component's state at load */
+    const calRef = useCallback(() => {
+        !value && setValue(selectedDate);
+    }, []);
 
-    const secondMonthDays: Array<Date> = Array(dayjs(secondMonth).daysInMonth())
-        .fill("")
-        .map(
-            (n, index) =>
-                (n = dayjs(secondMonth)
-                    .date(index + 1)
-                    .toDate())
-        );
-
-    // Utility functions for child components
-
-    function handleMonth(value: number): void {
-        !showSecondMonth
-            ? dispatch({ operation: "firstMonth", value })
-            : dispatch({ operation: "bothMonths", value });
-    }
-
-    function handleDate(value: Date): void {
-        dispatch({ operation: "selectDate", value });
+    /** Performs calculations and dispatches reducer actions to update state */
+    function handleDispatch(action: HandleDispatchType): void {
+        const { type, value } = action;
+        switch (type) {
+            case "SELECT_DATE": {
+                dispatch({ type, value });
+                setValue(value);
+                break;
+            }
+            case "UPDATE_MONTH": {
+                const updatedMonth = dayjs(currentMonth)
+                    .add(value, "month")
+                    .toDate();
+                dispatch({ type, value: updatedMonth });
+                break;
+            }
+        }
     }
 
     return (
-        <div aria-label="Calendar">
-            <CalendarDays
-                month={firstMonth}
-                days={firstMonthDays}
+        <div aria-label="Calendar" ref={calRef}>
+            <CalendarComponent
+                selectedDate={selectedDate}
+                month={currentMonth}
+                dates={currentMonthDates}
                 appointments={appointments}
-                selectedDay={value ?? selectedDate}
-                handleMonth={handleMonth}
-                handleDate={handleDate}
+                dispatch={handleDispatch}
             />
-            {showSecondMonth && (
-                <CalendarDays
-                    month={secondMonth}
-                    days={secondMonthDays}
-                    appointments={appointments}
-                    selectedDay={value ?? selectedDate}
-                    handleMonth={handleMonth}
-                    handleDate={handleDate}
-                />
-            )}
         </div>
     );
 }
 
-export function CalendarDays({
+export function CalendarComponent({
+    selectedDate,
     month,
-    days,
+    dates,
     appointments,
-    selectedDay,
-    handleMonth,
-    handleDate,
+    dispatch,
 }: {
-    month: string;
-    days: Array<Date>;
+    selectedDate: Date;
+    month: Date;
+    dates: Array<Date>;
     appointments?: Array<{ date: string }>;
-    selectedDay: Date;
-    handleMonth: (n: number) => void;
-    handleDate: (n: Date) => void;
+    dispatch: (action: HandleDispatchType) => void;
 }) {
-    // Utility definitions/functions for `dayjs`
+    // UTILITY DEFINITIONS/FUNCTIONS FOR `dayjs`
 
+    /** Generates an array of labels -> [`Mo`, `Tu`, `We`, `...rest`]*/
     const daysOfWeek: Array<string> = Array(7)
         .fill("")
         .map((n, index) => (n = dayjs().day(index).format("dd")));
 
+    /** Checks for appointments to conditionally display indicators */
     function hasAppointment(
         appointments: { date: string }[],
-        day: Date
+        date: Date
     ): boolean {
         return appointments.filter((appointment) =>
-            sameDay(dayjs(appointment.date).toDate(), day)
+            sameDay(dayjs(appointment.date).toDate(), date)
         ).length
             ? true
             : false;
     }
 
-    function sameDay(date1: Date, date2?: Date): boolean {
-        return date2
-            ? dayjs(date1).isSame(date2, "day")
-            : dayjs().isSame(date1, "day");
-    }
-
-    // Utility definitions/functions for `TailwindCSS`
+    // UTILITY DEFINITIONS/FUNCTIONS FOR 'TAILWINDCSS'
 
     const firstDayOfMonth = [
         "col-start-1",
@@ -175,7 +160,7 @@ export function CalendarDays({
         return classes.filter(Boolean).join(" ");
     }
 
-    function generateDayClasses(d1: Date, d2?: Date): string {
+    function createClass(d1: Date, d2?: Date): string {
         return classNames(
             sameDay(d1, d2) && "bg-gray-600 text-white ",
             !sameDay(d1, d2) && sameDay(d1) && "border border-gray-500",
@@ -197,7 +182,9 @@ export function CalendarDays({
             >
                 {/* Go to previous month */}
                 <button
-                    onClick={() => handleMonth(-1)}
+                    onClick={() =>
+                        dispatch({ type: "UPDATE_MONTH", value: -1 })
+                    }
                     className="hover:text-gray-500 mx-auto"
                 >
                     <svg
@@ -224,7 +211,9 @@ export function CalendarDays({
                 </span>
                 {/* Go to next month */}
                 <button
-                    onClick={() => handleMonth(+1)}
+                    onClick={() =>
+                        dispatch({ type: "UPDATE_MONTH", value: +1 })
+                    }
                     className="hover:text-gray-500 col-start-7 mx-auto"
                 >
                     <svg
@@ -249,27 +238,29 @@ export function CalendarDays({
                     </span>
                 ))}
             </nav>
-            {/* Calendar days */}
-            <div aria-label="Days" className="grid grid-cols-7">
-                {days.map((day, index) => (
+            {/* Calendar dates */}
+            <div aria-label="Dates" className="grid grid-cols-7">
+                {dates.map((date, index) => (
                     <div
-                        key={day.toString()}
+                        key={date.toString()}
                         className={classNames(
-                            index === 0 && firstDayOfMonth[dayjs(day).day()],
+                            index === 0 && firstDayOfMonth[dayjs(date).day()],
                             "p-2"
                         )}
                     >
                         <button
-                            aria-label={dayjs(day).format("DD/MM/YYYY")}
-                            onClick={() => handleDate(day)}
-                            className={generateDayClasses(day, selectedDay)}
+                            aria-label={dayjs(date).format("DD/MM/YYYY")}
+                            onClick={() =>
+                                dispatch({ type: "SELECT_DATE", value: date })
+                            }
+                            className={createClass(date, selectedDate)}
                         >
-                            {dayjs(day).format("D")}
+                            {dayjs(date).format("D")}
                         </button>
                         {/* Appointment Indicator */}
                         <div className="mx-auto mt-1 h-1 w-1">
                             {appointments &&
-                                hasAppointment(appointments, day) && (
+                                hasAppointment(appointments, date) && (
                                     <div className="h-1 w-1 rounded-full bg-gray-900" />
                                 )}
                         </div>
