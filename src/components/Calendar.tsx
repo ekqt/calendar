@@ -10,10 +10,11 @@ function today() {
 }
 /** Create an array of Dates for a given month */
 function createMonth(month = today()) {
-    return new Array(dayjs(month).daysInMonth()).fill("").map(
-        (n, index) =>
+    return Array.from(
+        { length: dayjs(month).daysInMonth() },
+        (n, i) =>
             (n = dayjs(month)
-                .date(index + 1)
+                .date(i + 1)
                 .toDate())
     );
 }
@@ -128,9 +129,10 @@ export function CalendarComponent({
     // UTILITY DEFINITIONS/FUNCTIONS FOR `dayjs`
 
     /** Generates an array of labels -> [`Mo`, `Tu`, `We`, `...rest`]*/
-    const daysOfWeek: Array<string> = Array(7)
-        .fill("")
-        .map((n, index) => (n = dayjs().day(index).format("dd")));
+    const daysOfWeek: Array<string> = Array.from(
+        { length: 7 },
+        (n, i) => (n = dayjs().day(i).format("dd"))
+    );
 
     /** Checks for appointments to conditionally display indicators */
     function hasAppointment(
