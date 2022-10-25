@@ -40,10 +40,11 @@ function today() {
 
 /** Create an array of Dates for a given month */
 function createMonth(month = today()) {
-    return new Array(dayjs(month).daysInMonth()).fill("").map(
-        (n, index) =>
+    return Array.from(
+        { length: dayjs(month).daysInMonth() },
+        (n, i) =>
             (n = dayjs(month)
-                .date(index + 1)
+                .date(i + 1)
                 .toDate())
     );
 }
@@ -215,3 +216,5 @@ After setting up our data, styling our calendar, and managing its state, here ar
 Feel free to explore this example using the resources below:
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/ekqt/calendar?file=src/components/Calendar.tsx&title=Calendar%20Component)
+
+Originally published: [Build a Tiny Calendar without Flex or useState](https://www.webscope.io/blog/build-a-tiny-calendar-without-flex-or-usestate)
