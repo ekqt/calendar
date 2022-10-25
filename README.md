@@ -64,7 +64,7 @@ export default function Calendar() {
     return (
         <div>
             {currentMonthDates.map((date) => (
-                <div key={date.toString()}>{dat.toString()}</div>
+                <div key={date.toString()}>{date.toString()}</div>
             ))}
         </div>
     );
